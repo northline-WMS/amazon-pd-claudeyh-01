@@ -112,6 +112,26 @@
 let imgFile=null,data=[];
 const $=id=>document.getElementById(id);
 
+// Resize and compress image to stay under Lambda 6MB limit
+function compressImage(file){
+  return new Promise((res)=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const MAX=1600;
+      let w=img.width,h=img.height;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const b64=canvas.toDataURL('image/jpeg',0.85).split(',')[1];
+      URL.revokeObjectURL(url);
+      res(b64);
+    };
+    img.src=url;
+  });
+}
+
 function setFile(f){
   if(!f||!f.type.startsWith('image/'))return;
   imgFile=f;
@@ -141,13 +161,12 @@ $('runBtn').onclick=async()=>{
   $('stat').classList.add('show');
   $('statMsg').textContent='Analyzing screenshot with Claude...';
   try{
-    const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(imgFile);});
-    const mt=imgFile.type||'image/png';
+    const b64=await compressImage(imgFile);
     const prompt=`Analyze this Amazon Seller Central screenshot. Extract every product row that shows both a SKU and a discounted price. Return ONLY a JSON array like [{"sku":"13014FBA","price":14.99}]. No markdown, no explanation. Skip rows missing either value.`;
     const resp=await fetch('https://4h62sxh4cnspucusduzrtdknxy0lwagg.lambda-url.us-east-2.on.aws/',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mt,data:b64}},{type:'text',text:prompt}]}]})
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},{type:'text',text:prompt}]}]})
     });
     if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e.error?.message||'Error '+resp.status);}
     $('statMsg').textContent='Building Excel...';
