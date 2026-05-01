@@ -182,9 +182,9 @@ $('runBtn').onclick=async()=>{
 
     const prompt=`Analyze this Amazon Seller Central screenshot. Extract every product row that shows both a SKU and a discounted price. Return ONLY a JSON array like [{"sku":"13014FBA","price":14.99}]. No markdown, no explanation. Skip rows missing either value.`;
 
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    const resp=await fetch('https://4h62sxh4cnspucusduzrtdknxy0lwagg.lambda-url.us-east-2.on.aws/',{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mt,data:b64}},{type:'text',text:prompt}]}]})
     });
 
