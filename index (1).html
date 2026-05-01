@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amazon PD Duplicate Event — CLAUDEYH-01</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='10' cy='22' r='7' fill='%23c0392b'/%3E%3Ccircle cx='22' cy='22' r='7' fill='%23e74c3c'/%3E%3Cpath d='M10 15 Q10 6 16 4 Q22 6 22 15' stroke='%232d5a1b' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3Cpath d='M16 4 Q18 2 20 3' stroke='%232d5a1b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f7f7f5;
+      --text: #1a1a1a;
+      --text-secondary: #6b6b6b;
+      --text-tertiary: #aaaaaa;
+      --border: rgba(0,0,0,0.12);
+      --border-hover: rgba(0,0,0,0.25);
+      --danger-bg: #fff0f0;
+      --danger-border: rgba(220,50,50,0.3);
+      --danger-text: #b91c1c;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1e;
+        --bg-secondary: #2c2c2e;
+        --text: #f0f0f0;
+        --text-secondary: #a0a0a0;
+        --text-tertiary: #606060;
+        --border: rgba(255,255,255,0.12);
+        --border-hover: rgba(255,255,255,0.28);
+        --danger-bg: #2a1515;
+        --danger-border: rgba(220,80,80,0.35);
+        --danger-text: #f87171;
+      }
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg-secondary);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 16px 60px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--bg);
+      border-radius: 16px;
+      border: 0.5px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.07);
+    }
+
+    .header {
+      border-bottom: 0.5px solid var(--border);
+      padding: 20px 24px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 36px; height: 36px;
+      background: #FF9900;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo svg { width: 20px; height: 20px; }
+
+    .header-text h1 {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .header-text p {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-family: 'IBM Plex Mono', monospace;
+      margin-top: 3px;
+    }
+    .badge {
+      margin-left: auto;
+      font-size: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 9px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .body { padding: 24px; }
+
+    .drop-zone {
+      border: 1.5px dashed var(--border-hover);
+      border-radius: 12px;
+      padding: 44px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+      background: var(--bg-secondary);
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: #FF9900;
+      background: var(--bg);
+    }
+    .drop-zone input[type=file] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .drop-icon {
+      width: 52px; height: 52px;
+      margin: 0 auto 16px;
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .drop-icon svg { width: 24px; height: 24px; color: #FF9900; }
+    .drop-zone h2 {
+      font-size: 15px; font-weight: 500;
+      color: var(--text); margin-bottom: 6px;
+    }
+    .drop-zone p { font-size: 13px; color: var(--text-secondary); }
+    .drop-zone .hint {
+      margin-top: 10px;
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--text-tertiary);
+    }
+
+    .preview-box {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border: 0.5px solid var(--border);
+      border-radius: 10px;
+      margin-top: 14px;
+      background: var(--bg);
+    }
+    .preview-box.show { display: flex; }
+    .preview-thumb {
+      width: 48px; height: 48px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 0.5px solid var(--border);
+      flex-shrink: 0;
+    }
+    .preview-info { flex: 1; min-width: 0; }
+    .preview-info .fname {
+      font-size: 13px; font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .preview-info .fsize {
+      font-size: 11px; color: var(--text-secondary);
+      font-family: 'IBM Plex Mono', monospace; margin-top: 2px;
+    }
+    .remove-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-tertiary); font-size: 18px; line-height: 1; padding: 4px;
+    }
+    .remove-btn:hover { color: var(--text); }
+
+    .run-btn {
+      width: 100%; margin-top: 18px; padding: 13px;
+      background: #FF9900; color: #fff; border: none;
+      border-radius: 10px; font-size: 14px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; cursor: pointer;
+      letter-spacing: -0.01em;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .run-btn:hover { opacity: 0.88; }
+    .run-btn:active { transform: scale(0.99); }
+    .run-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .status-panel {
+      display: none; margin-top: 18px; padding: 14px 16px;
+      border: 0.5px solid var(--border); border-radius: 10px;
+      background: var(--bg-secondary);
+    }
+    .status-panel.show { display: block; }
+    .status-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary); }
+    .spinner {
+      width: 16px; height: 16px; flex-shrink: 0;
+      border: 2px solid var(--border-hover);
+      border-top-color: #FF9900;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-panel {
+      display: none; margin-top: 14px; padding: 13px 16px;
+      border: 0.5px solid var(--danger-border); border-radius: 10px;
+      background: var(--danger-bg); font-size: 13px; color: var(--danger-text);
+    }
+    .error-panel.show { display: block; }
+
+    .results-panel { display: none; margin-top: 20px; }
+    .results-panel.show { display: block; }
+
+    .results-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+    }
+    .check {
+      width: 20px; height: 20px; background: #2e7d32;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .check svg { width: 11px; height: 11px; }
+    .results-header span { font-size: 13px; font-weight: 500; }
+    .results-header .count {
+      margin-left: auto; font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace; color: var(--text-secondary);
+    }
+
+    .table-wrap { overflow-x: auto; border: 0.5px solid var(--border); border-radius: 10px; }
+    .data-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 12px; font-family: 'IBM Plex Mono', monospace;
+    }
+    .data-table th {
+      background: var(--bg-secondary); padding: 8px 14px; text-align: left;
+      font-weight: 500; font-size: 10px; color: var(--text-secondary);
+      border-bottom: 0.5px solid var(--border);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .data-table td {
+      padding: 7px 14px; border-bottom: 0.5px solid var(--border); color: var(--text);
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--bg-secondary); }
+
+    .dl-btn {
+      width: 100%; margin-top: 14px; padding: 13px;
+      background: #2e7d32; color: #fff; border: none;
+      border-radius: 10px; font-size: 14px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: opacity 0.15s;
+    }
+    .dl-btn:hover { opacity: 0.88; }
+    .dl-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .footer {
+      margin-top: 32px; text-align: center;
+      font-size: 11px; font-family: 'IBM Plex Mono', monospace;
+      color: var(--text-tertiary);
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="card">
+      <div class="header">
+        <div class="logo">
+          <svg viewBox="0 0 24 24" fill="white"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+        </div>
+        <div class="header-text">
+          <h1>Amazon PD Duplicate Event</h1>
+          <p>CLAUDEYH-01</p>
+        </div>
+        <div class="badge">Fixed Price Template</div>
+      </div>
+
+      <div class="body">
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" accept="image/*" />
+          <div class="drop-icon" style="background:none;border:none;width:72px;height:72px;">
+            <svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" width="72" height="72">
+              <!-- stems -->
+              <path d="M24 30 Q22 16 36 12 Q50 16 48 30" stroke="#2d5a1b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <path d="M36 12 Q40 6 46 8" stroke="#2d5a1b" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <!-- leaf -->
+              <ellipse cx="41" cy="10" rx="5" ry="2.5" fill="#3a7d1e" transform="rotate(-30 41 10)"/>
+              <!-- left cherry shadow -->
+              <circle cx="22" cy="42" r="13" fill="#8b0000" opacity="0.18"/>
+              <!-- left cherry -->
+              <circle cx="22" cy="41" r="13" fill="#c0392b"/>
+              <circle cx="18" cy="36" r="3.5" fill="#e55" opacity="0.45"/>
+              <!-- right cherry shadow -->
+              <circle cx="50" cy="42" r="13" fill="#8b0000" opacity="0.18"/>
+              <!-- right cherry -->
+              <circle cx="50" cy="41" r="13" fill="#e74c3c"/>
+              <circle cx="46" cy="36" r="3.5" fill="#f88" opacity="0.45"/>
+            </svg>
+          </div>
+          <h2>Drop your Seller Central screenshot</h2>
+          <p>or click to browse files</p>
+          <div class="hint">PNG · JPG · WEBP — Price Discount / Product Performance view</div>
+        </div>
+
+        <div class="preview-box" id="previewBox">
+          <img class="preview-thumb" id="previewThumb" src="" alt="" />
+          <div class="preview-info">
+            <div class="fname" id="previewName"></div>
+            <div class="fsize" id="previewSize"></div>
+          </div>
+          <button class="remove-btn" id="removeBtn">✕</button>
+        </div>
+
+        <button class="run-btn" id="runBtn" disabled>Generate Amazon Price Discount Template</button>
+
+        <div class="status-panel" id="statusPanel">
+          <div class="status-row">
+            <div class="spinner"></div>
+            <span id="statusMsg">Analyzing screenshot with Claude...</span>
+          </div>
+        </div>
+
+        <div class="error-panel" id="errorPanel"></div>
+
+        <div class="results-panel" id="resultsPanel">
+          <div class="results-header">
+            <div class="check">
+              <svg viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2">
+                <path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span>Template ready</span>
+            <span class="count" id="rowCount"></span>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Discounted Price</th>
+                  <th>Committed Units</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+          <button class="dl-btn" id="dlBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <path d="M12 3v12m0 0l-4-4m4 4l4-4M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Download Price_Discount_Fixed_price.xlsx
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">Powered by Claude · Northline Brands · CLAUDEYH-01</div>
+  </div>
+
+  <script>
+    let imageFile = null;
+    let extractedData = [];
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const previewBox = document.getElementById('previewBox');
+    const previewThumb = document.getElementById('previewThumb');
+    const previewName = document.getElementById('previewName');
+    const previewSize = document.getElementById('previewSize');
+    const removeBtn = document.getElementById('removeBtn');
+    const runBtn = document.getElementById('runBtn');
+    const statusPanel = document.getElementById('statusPanel');
+    const statusMsg = document.getElementById('statusMsg');
+    const errorPanel = document.getElementById('errorPanel');
+    const resultsPanel = document.getElementById('resultsPanel');
+    const tableBody = document.getElementById('tableBody');
+    const rowCount = document.getElementById('rowCount');
+    const dlBtn = document.getElementById('dlBtn');
+
+    function setFile(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      imageFile = file;
+      previewThumb.src = URL.createObjectURL(file);
+      previewName.textContent = file.name;
+      previewSize.textContent = (file.size / 1024).toFixed(1) + ' KB';
+      previewBox.classList.add('show');
+      runBtn.disabled = false;
+      resultsPanel.classList.remove('show');
+      errorPanel.classList.remove('show');
+      statusPanel.classList.remove('show');
+    }
+
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+    removeBtn.addEventListener('click', () => {
+      imageFile = null;
+      previewBox.classList.remove('show');
+      runBtn.disabled = true;
+      fileInput.value = '';
+      resultsPanel.classList.remove('show');
+      errorPanel.classList.remove('show');
+      statusPanel.classList.remove('show');
+    });
+
+    function showError(msg) {
+      errorPanel.textContent = msg;
+      errorPanel.classList.add('show');
+      statusPanel.classList.remove('show');
+      runBtn.disabled = false;
+    }
+
+    function toBase64(file) {
+      return new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(',')[1]);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+    }
+
+    runBtn.addEventListener('click', async () => {
+      if (!imageFile) return;
+      runBtn.disabled = true;
+      errorPanel.classList.remove('show');
+      resultsPanel.classList.remove('show');
+      statusPanel.classList.add('show');
+      statusMsg.textContent = 'Analyzing screenshot with Claude...';
+
+      try {
+        const b64 = await toBase64(imageFile);
+        const mediaType = imageFile.type || 'image/png';
+
+        const prompt = `You are analyzing an Amazon Seller Central screenshot showing a Price Discount or Product Performance page.
+
+Extract ALL visible products that have a SKU and a discounted price shown.
+
+For each product return:
+- sku: the SKU value (e.g. "13014FBA", "18000UPC")
+- price: the numeric discounted price (e.g. 14.99)
+
+IMPORTANT: Only include rows where BOTH sku AND price are clearly visible. Skip parent/group rows with no price. Skip rows where either field is unclear.
+
+Respond ONLY with valid JSON array, no markdown, no explanation:
+[{"sku":"...","price":14.99},...]`;
+
+        const response = await fetch('LAMBDA_FUNCTION_URL_HERE', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1000,
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'image', source: { type: 'base64', media_type: mediaType, data: b64 } },
+                { type: 'text', text: prompt }
+              ]
+            }]
+          })
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.error?.message || 'API error ' + response.status);
+        }
+
+        statusMsg.textContent = 'Building Excel template...';
+
+        const data = await response.json();
+        const raw = data.content.find(b => b.type === 'text')?.text || '[]';
+        const clean = raw.replace(/```json|```/g, '').trim();
+        extractedData = JSON.parse(clean);
+
+        if (!Array.isArray(extractedData) || extractedData.length === 0) {
+          throw new Error('No products found in screenshot. Make sure the image shows SKUs and discounted prices clearly.');
+        }
+
+        tableBody.innerHTML = '';
+        extractedData.forEach(row => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${row.sku}</td><td>$${parseFloat(row.price).toFixed(2)}</td><td>5000</td>`;
+          tableBody.appendChild(tr);
+        });
+
+        rowCount.textContent = extractedData.length + ' SKUs';
+        statusPanel.classList.remove('show');
+        resultsPanel.classList.add('show');
+        runBtn.disabled = false;
+
+      } catch (e) {
+        showError('Error: ' + e.message);
+      }
+    });
+
+    dlBtn.addEventListener('click', () => {
+      const wb = XLSX.utils.book_new();
+
+      const instructionsData = [
+        ['How to use your Price Discount Template'],
+        ['Step 1: Getting started'],
+        ['Refer to the Data Definitions sheet to familiarise yourself with acceptable values.'],
+        ['Do not modify or delete any column headers in the Template sheet.'],
+        [''],
+        ['Step 2: Filling out the template'],
+        ['Enter the SKUs, discount amounts, and committed units to upload to your Price Discount.'],
+        [''],
+        ['Step 3: Save and upload'],
+        ['File must be xlsx format. Upload via the Upload file button on Step 2 Add Products section.'],
+      ];
+      const wsInstructions = XLSX.utils.aoa_to_sheet(instructionsData);
+      XLSX.utils.book_append_sheet(wb, wsInstructions, 'Instructions');
+
+      const templateRows = [
+        ['SKU', 'DISCOUNTED PRICE', 'COMMITTED UNITS'],
+        ['SKU', 'Discounted Price', 'Committed Units'],
+        ...extractedData.map(r => [r.sku, parseFloat(r.price), 5000])
+      ];
+      const wsTemplate = XLSX.utils.aoa_to_sheet(templateRows);
+      wsTemplate['!cols'] = [{ wch: 22 }, { wch: 22 }, { wch: 22 }];
+      XLSX.utils.book_append_sheet(wb, wsTemplate, 'Template');
+
+      const defsData = [
+        ['Column name', 'Definition and Use', 'Accepted Values', 'Example', 'Required'],
+        ['SKU', 'Enter the SKU you wish to add to your Price Discount.', 'Alphanumeric, 1-40 characters.', 'SKU123', 'Required'],
+        ['Discounted Price', 'Enter the fixed discounted price for the product', 'Positive Numeric', '20', 'Required'],
+        ['Committed Units', 'The number of units to be sold at the discounted price.', 'Positive Numeric', '50', 'Required'],
+      ];
+      const wsDefs = XLSX.utils.aoa_to_sheet(defsData);
+      XLSX.utils.book_append_sheet(wb, wsDefs, 'Data Definitions');
+
+      XLSX.writeFile(wb, 'Price_Discount_Fixed_price.xlsx');
+    });
+  </script>
+</body>
+</html>
