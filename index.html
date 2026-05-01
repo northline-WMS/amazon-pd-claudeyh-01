@@ -20,15 +20,6 @@
     .ht p{font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace;margin-top:3px;}
     .badge{margin-left:auto;font-size:10px;font-family:'IBM Plex Mono',monospace;background:var(--bg2);border:0.5px solid var(--border);border-radius:4px;padding:4px 9px;color:var(--text2);white-space:nowrap;}
     .body{padding:24px;}
-    .apisec{margin-bottom:20px;padding:14px 16px;background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;}
-    .apisec label{font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;font-family:'IBM Plex Mono',monospace;display:block;margin-bottom:8px;}
-    .apirow{display:flex;gap:8px;}
-    .apiinput{flex:1;padding:9px 12px;border:0.5px solid var(--borderh);border-radius:8px;font-size:12px;font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text);outline:none;}
-    .apiinput:focus{border-color:#FF9900;}
-    .apisave{padding:9px 16px;background:#FF9900;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;}
-    .apisave:hover{opacity:.88;}
-    .apimsg{font-size:11px;margin-top:6px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
-    .apimsg.ok{color:#2e7d32;}
     .drop{border:1.5px dashed var(--borderh);border-radius:12px;padding:40px 24px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;position:relative;background:var(--bg2);}
     .drop:hover,.drop.over{border-color:#FF9900;background:var(--bg);}
     .drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
@@ -44,7 +35,7 @@
     .xbtn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;padding:4px;}
     .xbtn:hover{color:var(--text);}
     .runbtn{width:100%;margin-top:18px;padding:13px;background:#FF9900;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s,transform .1s;}
-    .runbtn:hover{opacity:.88;} .runbtn:active{transform:scale(.99);} .runbtn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+    .runbtn:hover{opacity:.88;}.runbtn:active{transform:scale(.99);}.runbtn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
     .statpanel{display:none;margin-top:18px;padding:14px 16px;border:0.5px solid var(--border);border-radius:10px;background:var(--bg2);}
     .statpanel.show{display:block;}
     .statrow{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2);}
@@ -52,7 +43,7 @@
     @keyframes spin{to{transform:rotate(360deg);}}
     .errpanel{display:none;margin-top:14px;padding:13px 16px;border:0.5px solid var(--dbo);border-radius:10px;background:var(--dbg);font-size:13px;color:var(--dt);}
     .errpanel.show{display:block;}
-    .respanel{display:none;margin-top:20px;} .respanel.show{display:block;}
+    .respanel{display:none;margin-top:20px;}.respanel.show{display:block;}
     .reshdr{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
     .chk{width:20px;height:20px;background:#2e7d32;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     .reshdr span{font-size:13px;font-weight:500;}
@@ -61,7 +52,7 @@
     .dtbl{width:100%;border-collapse:collapse;font-size:12px;font-family:'IBM Plex Mono',monospace;}
     .dtbl th{background:var(--bg2);padding:8px 14px;text-align:left;font-weight:500;font-size:10px;color:var(--text2);border-bottom:0.5px solid var(--border);text-transform:uppercase;letter-spacing:.05em;}
     .dtbl td{padding:7px 14px;border-bottom:0.5px solid var(--border);color:var(--text);}
-    .dtbl tr:last-child td{border-bottom:none;} .dtbl tr:hover td{background:var(--bg2);}
+    .dtbl tr:last-child td{border-bottom:none;}.dtbl tr:hover td{background:var(--bg2);}
     .dlbtn{width:100%;margin-top:14px;padding:13px;background:#2e7d32;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;}
     .dlbtn:hover{opacity:.88;}
     .footer{margin-top:32px;text-align:center;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
@@ -76,15 +67,6 @@
       <div class="badge">Fixed Price Template</div>
     </div>
     <div class="body">
-      <div class="apisec">
-        <label>Anthropic API Key — saved in this browser only</label>
-        <div class="apirow">
-          <input class="apiinput" type="password" id="apiKey" placeholder="sk-ant-api03-..." />
-          <button class="apisave" id="saveKey">Save</button>
-        </div>
-        <div class="apimsg" id="keyMsg">Enter your key from console.anthropic.com → API Keys</div>
-      </div>
-
       <div class="drop" id="drop">
         <input type="file" id="fileIn" accept="image/*" />
         <svg viewBox="0 0 72 72" width="72" height="72" style="margin:0 auto;display:block;">
@@ -102,17 +84,14 @@
         <p>or click to browse files</p>
         <div class="hint">PNG · JPG · WEBP — Price Discount / Product Performance view</div>
       </div>
-
       <div class="prev" id="prev">
         <img class="thumb" id="thumb" src="" alt=""/>
         <div class="pi"><div class="fn" id="fname"></div><div class="fs" id="fsize"></div></div>
         <button class="xbtn" id="xbtn">✕</button>
       </div>
-
       <button class="runbtn" id="runBtn" disabled>Generate Amazon Price Discount Template</button>
       <div class="statpanel" id="stat"><div class="statrow"><div class="spin"></div><span id="statMsg">Analyzing screenshot...</span></div></div>
       <div class="errpanel" id="err"></div>
-
       <div class="respanel" id="res">
         <div class="reshdr">
           <div class="chk"><svg viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2"><path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -130,20 +109,8 @@
   <div class="footer">Powered by Claude · Northline Brands · CLAUDEYH-01</div>
 </div>
 <script>
-let imgFile=null, data=[];
+let imgFile=null,data=[];
 const $=id=>document.getElementById(id);
-
-// Load saved key
-const saved=localStorage.getItem('ant_key');
-if(saved){$('apiKey').value=saved;$('keyMsg').textContent='✓ Key saved';$('keyMsg').className='apimsg ok';}
-
-$('saveKey').onclick=()=>{
-  const k=$('apiKey').value.trim();
-  if(!k.startsWith('sk-ant-')){$('keyMsg').textContent='✗ Must start with sk-ant-';$('keyMsg').style.color='#b91c1c';return;}
-  localStorage.setItem('ant_key',k);
-  $('keyMsg').textContent='✓ Key saved — ready';
-  $('keyMsg').className='apimsg ok';
-};
 
 function setFile(f){
   if(!f||!f.type.startsWith('image/'))return;
@@ -167,35 +134,27 @@ $('xbtn').onclick=()=>{imgFile=null;$('prev').classList.remove('show');$('runBtn
 function showErr(m){$('err').textContent=m;$('err').classList.add('show');$('stat').classList.remove('show');$('runBtn').disabled=false;}
 
 $('runBtn').onclick=async()=>{
-  const key=localStorage.getItem('ant_key');
-  if(!key){showErr('Save your Anthropic API key first.');return;}
   if(!imgFile)return;
   $('runBtn').disabled=true;
   $('err').classList.remove('show');
   $('res').classList.remove('show');
   $('stat').classList.add('show');
   $('statMsg').textContent='Analyzing screenshot with Claude...';
-
   try{
     const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(imgFile);});
     const mt=imgFile.type||'image/png';
-
     const prompt=`Analyze this Amazon Seller Central screenshot. Extract every product row that shows both a SKU and a discounted price. Return ONLY a JSON array like [{"sku":"13014FBA","price":14.99}]. No markdown, no explanation. Skip rows missing either value.`;
-
     const resp=await fetch('https://4h62sxh4cnspucusduzrtdknxy0lwagg.lambda-url.us-east-2.on.aws/',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mt,data:b64}},{type:'text',text:prompt}]}]})
     });
-
-    if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e.error?.message||'API error '+resp.status);}
-
+    if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e.error?.message||'Error '+resp.status);}
     $('statMsg').textContent='Building Excel...';
     const json=await resp.json();
     const raw=json.content.find(b=>b.type==='text')?.text||'[]';
     data=JSON.parse(raw.replace(/```json|```/g,'').trim());
-    if(!data.length)throw new Error('No products found. Make sure SKUs and prices are visible in the screenshot.');
-
+    if(!data.length)throw new Error('No products found. Make sure SKUs and prices are visible.');
     $('tbody').innerHTML='';
     data.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${r.sku}</td><td>$${parseFloat(r.price).toFixed(2)}</td><td>5000</td>`;$('tbody').appendChild(tr);});
     $('cnt').textContent=data.length+' SKUs';
