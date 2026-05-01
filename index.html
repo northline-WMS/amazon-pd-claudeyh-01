@@ -10,373 +10,210 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #ffffff; --bg-secondary: #f7f7f5; --text: #1a1a1a;
-      --text-secondary: #6b6b6b; --text-tertiary: #aaaaaa;
-      --border: rgba(0,0,0,0.12); --border-hover: rgba(0,0,0,0.25);
-      --danger-bg: #fff0f0; --danger-border: rgba(220,50,50,0.3); --danger-text: #b91c1c;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #1c1c1e; --bg-secondary: #2c2c2e; --text: #f0f0f0;
-        --text-secondary: #a0a0a0; --text-tertiary: #606060;
-        --border: rgba(255,255,255,0.12); --border-hover: rgba(255,255,255,0.28);
-        --danger-bg: #2a1515; --danger-border: rgba(220,80,80,0.35); --danger-text: #f87171;
-      }
-    }
-    html, body { min-height: 100vh; background: var(--bg-secondary); font-family: 'DM Sans', sans-serif; color: var(--text); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px 60px; }
-    .card { width: 100%; max-width: 560px; background: var(--bg); border-radius: 16px; border: 0.5px solid var(--border); overflow: hidden; box-shadow: 0 2px 24px rgba(0,0,0,0.07); }
-    .header { border-bottom: 0.5px solid var(--border); padding: 20px 24px 18px; display: flex; align-items: center; gap: 14px; }
-    .logo { width: 36px; height: 36px; background: #FF9900; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .logo svg { width: 20px; height: 20px; }
-    .header-text h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); line-height: 1.2; }
-    .header-text p { font-size: 11px; color: var(--text-secondary); font-family: 'IBM Plex Mono', monospace; margin-top: 3px; }
-    .badge { margin-left: auto; font-size: 10px; font-family: 'IBM Plex Mono', monospace; background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: 4px; padding: 4px 9px; color: var(--text-secondary); white-space: nowrap; }
-    .body { padding: 24px; }
-
-    /* API Key section */
-    .api-section { margin-bottom: 20px; padding: 14px 16px; background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: 10px; }
-    .api-section label { font-size: 11px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-family: 'IBM Plex Mono', monospace; display: block; margin-bottom: 8px; }
-    .api-row { display: flex; gap: 8px; align-items: center; }
-    .api-input { flex: 1; padding: 9px 12px; border: 0.5px solid var(--border-hover); border-radius: 8px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; background: var(--bg); color: var(--text); outline: none; }
-    .api-input:focus { border-color: #FF9900; }
-    .api-save { padding: 9px 16px; background: #FF9900; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
-    .api-save:hover { opacity: 0.88; }
-    .api-status { font-size: 11px; margin-top: 6px; font-family: 'IBM Plex Mono', monospace; }
-    .api-status.ok { color: #2e7d32; }
-    .api-status.empty { color: var(--text-tertiary); }
-
-    .drop-zone { border: 1.5px dashed var(--border-hover); border-radius: 12px; padding: 44px 24px; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; position: relative; background: var(--bg-secondary); }
-    .drop-zone:hover, .drop-zone.drag-over { border-color: #FF9900; background: var(--bg); }
-    .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-    .drop-zone h2 { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 6px; margin-top: 12px; }
-    .drop-zone p { font-size: 13px; color: var(--text-secondary); }
-    .drop-zone .hint { margin-top: 10px; font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--text-tertiary); }
-    .preview-box { display: none; align-items: center; gap: 12px; padding: 12px 16px; border: 0.5px solid var(--border); border-radius: 10px; margin-top: 14px; background: var(--bg); }
-    .preview-box.show { display: flex; }
-    .preview-thumb { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; border: 0.5px solid var(--border); flex-shrink: 0; }
-    .preview-info { flex: 1; min-width: 0; }
-    .preview-info .fname { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .preview-info .fsize { font-size: 11px; color: var(--text-secondary); font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
-    .remove-btn { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 18px; line-height: 1; padding: 4px; }
-    .remove-btn:hover { color: var(--text); }
-    .run-btn { width: 100%; margin-top: 18px; padding: 13px; background: #FF9900; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; letter-spacing: -0.01em; transition: opacity 0.15s, transform 0.1s; }
-    .run-btn:hover { opacity: 0.88; }
-    .run-btn:active { transform: scale(0.99); }
-    .run-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-    .status-panel { display: none; margin-top: 18px; padding: 14px 16px; border: 0.5px solid var(--border); border-radius: 10px; background: var(--bg-secondary); }
-    .status-panel.show { display: block; }
-    .status-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary); }
-    .spinner { width: 16px; height: 16px; flex-shrink: 0; border: 2px solid var(--border-hover); border-top-color: #FF9900; border-radius: 50%; animation: spin 0.7s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .error-panel { display: none; margin-top: 14px; padding: 13px 16px; border: 0.5px solid var(--danger-border); border-radius: 10px; background: var(--danger-bg); font-size: 13px; color: var(--danger-text); }
-    .error-panel.show { display: block; }
-    .results-panel { display: none; margin-top: 20px; }
-    .results-panel.show { display: block; }
-    .results-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-    .check { width: 20px; height: 20px; background: #2e7d32; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .check svg { width: 11px; height: 11px; }
-    .results-header span { font-size: 13px; font-weight: 500; }
-    .results-header .count { margin-left: auto; font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--text-secondary); }
-    .table-wrap { overflow-x: auto; border: 0.5px solid var(--border); border-radius: 10px; }
-    .data-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'IBM Plex Mono', monospace; }
-    .data-table th { background: var(--bg-secondary); padding: 8px 14px; text-align: left; font-weight: 500; font-size: 10px; color: var(--text-secondary); border-bottom: 0.5px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; }
-    .data-table td { padding: 7px 14px; border-bottom: 0.5px solid var(--border); color: var(--text); }
-    .data-table tr:last-child td { border-bottom: none; }
-    .data-table tr:hover td { background: var(--bg-secondary); }
-    .dl-btn { width: 100%; margin-top: 14px; padding: 13px; background: #2e7d32; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.15s; }
-    .dl-btn:hover { opacity: 0.88; }
-    .dl-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
-    .footer { margin-top: 32px; text-align: center; font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--text-tertiary); }
+    :root { --bg:#fff;--bg2:#f7f7f5;--text:#1a1a1a;--text2:#6b6b6b;--text3:#aaa;--border:rgba(0,0,0,0.12);--borderh:rgba(0,0,0,0.25);--dbg:#fff0f0;--dbo:rgba(220,50,50,0.3);--dt:#b91c1c; }
+    @media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--text:#f0f0f0;--text2:#a0a0a0;--text3:#606060;--border:rgba(255,255,255,0.12);--borderh:rgba(255,255,255,0.28);--dbg:#2a1515;--dbo:rgba(220,80,80,0.35);--dt:#f87171;}}
+    html,body{min-height:100vh;background:var(--bg2);font-family:'DM Sans',sans-serif;color:var(--text);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px 60px;}
+    .card{width:100%;max-width:560px;background:var(--bg);border-radius:16px;border:0.5px solid var(--border);overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,0.07);}
+    .hdr{border-bottom:0.5px solid var(--border);padding:20px 24px 18px;display:flex;align-items:center;gap:14px;}
+    .logo{width:36px;height:36px;background:#FF9900;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .ht h1{font-size:15px;font-weight:600;color:var(--text);line-height:1.2;}
+    .ht p{font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace;margin-top:3px;}
+    .badge{margin-left:auto;font-size:10px;font-family:'IBM Plex Mono',monospace;background:var(--bg2);border:0.5px solid var(--border);border-radius:4px;padding:4px 9px;color:var(--text2);white-space:nowrap;}
+    .body{padding:24px;}
+    .apisec{margin-bottom:20px;padding:14px 16px;background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;}
+    .apisec label{font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;font-family:'IBM Plex Mono',monospace;display:block;margin-bottom:8px;}
+    .apirow{display:flex;gap:8px;}
+    .apiinput{flex:1;padding:9px 12px;border:0.5px solid var(--borderh);border-radius:8px;font-size:12px;font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text);outline:none;}
+    .apiinput:focus{border-color:#FF9900;}
+    .apisave{padding:9px 16px;background:#FF9900;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;}
+    .apisave:hover{opacity:.88;}
+    .apimsg{font-size:11px;margin-top:6px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
+    .apimsg.ok{color:#2e7d32;}
+    .drop{border:1.5px dashed var(--borderh);border-radius:12px;padding:40px 24px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;position:relative;background:var(--bg2);}
+    .drop:hover,.drop.over{border-color:#FF9900;background:var(--bg);}
+    .drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+    .drop h2{font-size:15px;font-weight:500;color:var(--text);margin:12px 0 6px;}
+    .drop p{font-size:13px;color:var(--text2);}
+    .hint{margin-top:8px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
+    .prev{display:none;align-items:center;gap:12px;padding:12px 16px;border:0.5px solid var(--border);border-radius:10px;margin-top:14px;background:var(--bg);}
+    .prev.show{display:flex;}
+    .thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;border:0.5px solid var(--border);flex-shrink:0;}
+    .pi{flex:1;min-width:0;}
+    .pi .fn{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .pi .fs{font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+    .xbtn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;padding:4px;}
+    .xbtn:hover{color:var(--text);}
+    .runbtn{width:100%;margin-top:18px;padding:13px;background:#FF9900;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s,transform .1s;}
+    .runbtn:hover{opacity:.88;} .runbtn:active{transform:scale(.99);} .runbtn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+    .statpanel{display:none;margin-top:18px;padding:14px 16px;border:0.5px solid var(--border);border-radius:10px;background:var(--bg2);}
+    .statpanel.show{display:block;}
+    .statrow{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2);}
+    .spin{width:16px;height:16px;flex-shrink:0;border:2px solid var(--borderh);border-top-color:#FF9900;border-radius:50%;animation:spin .7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .errpanel{display:none;margin-top:14px;padding:13px 16px;border:0.5px solid var(--dbo);border-radius:10px;background:var(--dbg);font-size:13px;color:var(--dt);}
+    .errpanel.show{display:block;}
+    .respanel{display:none;margin-top:20px;} .respanel.show{display:block;}
+    .reshdr{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+    .chk{width:20px;height:20px;background:#2e7d32;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .reshdr span{font-size:13px;font-weight:500;}
+    .cnt{margin-left:auto;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text2);}
+    .twrap{overflow-x:auto;border:0.5px solid var(--border);border-radius:10px;}
+    .dtbl{width:100%;border-collapse:collapse;font-size:12px;font-family:'IBM Plex Mono',monospace;}
+    .dtbl th{background:var(--bg2);padding:8px 14px;text-align:left;font-weight:500;font-size:10px;color:var(--text2);border-bottom:0.5px solid var(--border);text-transform:uppercase;letter-spacing:.05em;}
+    .dtbl td{padding:7px 14px;border-bottom:0.5px solid var(--border);color:var(--text);}
+    .dtbl tr:last-child td{border-bottom:none;} .dtbl tr:hover td{background:var(--bg2);}
+    .dlbtn{width:100%;margin-top:14px;padding:13px;background:#2e7d32;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;}
+    .dlbtn:hover{opacity:.88;}
+    .footer{margin-top:32px;text-align:center;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
   </style>
 </head>
 <body>
-  <div>
-    <div class="card">
-      <div class="header">
-        <div class="logo">
-          <svg viewBox="0 0 24 24" fill="white"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+<div>
+  <div class="card">
+    <div class="hdr">
+      <div class="logo"><svg viewBox="0 0 24 24" fill="white"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg></div>
+      <div class="ht"><h1>Amazon PD Duplicate Event</h1><p>CLAUDEYH-01</p></div>
+      <div class="badge">Fixed Price Template</div>
+    </div>
+    <div class="body">
+      <div class="apisec">
+        <label>Anthropic API Key — saved in this browser only</label>
+        <div class="apirow">
+          <input class="apiinput" type="password" id="apiKey" placeholder="sk-ant-api03-..." />
+          <button class="apisave" id="saveKey">Save</button>
         </div>
-        <div class="header-text">
-          <h1>Amazon PD Duplicate Event</h1>
-          <p>CLAUDEYH-01</p>
-        </div>
-        <div class="badge">Fixed Price Template</div>
+        <div class="apimsg" id="keyMsg">Enter your key from console.anthropic.com → API Keys</div>
       </div>
 
-      <div class="body">
+      <div class="drop" id="drop">
+        <input type="file" id="fileIn" accept="image/*" />
+        <svg viewBox="0 0 72 72" width="72" height="72" style="margin:0 auto;display:block;">
+          <path d="M24 30 Q22 16 36 12 Q50 16 48 30" stroke="#2d5a1b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M36 12 Q40 6 46 8" stroke="#2d5a1b" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <ellipse cx="41" cy="10" rx="5" ry="2.5" fill="#3a7d1e" transform="rotate(-30 41 10)"/>
+          <circle cx="22" cy="42" r="13" fill="#8b0000" opacity="0.18"/>
+          <circle cx="22" cy="41" r="13" fill="#c0392b"/>
+          <circle cx="18" cy="36" r="3.5" fill="#e55" opacity="0.45"/>
+          <circle cx="50" cy="42" r="13" fill="#8b0000" opacity="0.18"/>
+          <circle cx="50" cy="41" r="13" fill="#e74c3c"/>
+          <circle cx="46" cy="36" r="3.5" fill="#f88" opacity="0.45"/>
+        </svg>
+        <h2>Drop your Seller Central screenshot</h2>
+        <p>or click to browse files</p>
+        <div class="hint">PNG · JPG · WEBP — Price Discount / Product Performance view</div>
+      </div>
 
-        <!-- API Key Section -->
-        <div class="api-section">
-          <label>Anthropic API Key</label>
-          <div class="api-row">
-            <input class="api-input" type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." />
-            <button class="api-save" id="apiSaveBtn">Save</button>
-          </div>
-          <div class="api-status empty" id="apiStatus">No key saved — enter your key above</div>
+      <div class="prev" id="prev">
+        <img class="thumb" id="thumb" src="" alt=""/>
+        <div class="pi"><div class="fn" id="fname"></div><div class="fs" id="fsize"></div></div>
+        <button class="xbtn" id="xbtn">✕</button>
+      </div>
+
+      <button class="runbtn" id="runBtn" disabled>Generate Amazon Price Discount Template</button>
+      <div class="statpanel" id="stat"><div class="statrow"><div class="spin"></div><span id="statMsg">Analyzing screenshot...</span></div></div>
+      <div class="errpanel" id="err"></div>
+
+      <div class="respanel" id="res">
+        <div class="reshdr">
+          <div class="chk"><svg viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2"><path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span>Template ready</span>
+          <span class="cnt" id="cnt"></span>
         </div>
-
-        <div class="drop-zone" id="dropZone">
-          <input type="file" id="fileInput" accept="image/*" />
-          <div style="width:72px;height:72px;margin:0 auto;">
-            <svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" width="72" height="72">
-              <path d="M24 30 Q22 16 36 12 Q50 16 48 30" stroke="#2d5a1b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-              <path d="M36 12 Q40 6 46 8" stroke="#2d5a1b" stroke-width="2" fill="none" stroke-linecap="round"/>
-              <ellipse cx="41" cy="10" rx="5" ry="2.5" fill="#3a7d1e" transform="rotate(-30 41 10)"/>
-              <circle cx="22" cy="42" r="13" fill="#8b0000" opacity="0.18"/>
-              <circle cx="22" cy="41" r="13" fill="#c0392b"/>
-              <circle cx="18" cy="36" r="3.5" fill="#e55" opacity="0.45"/>
-              <circle cx="50" cy="42" r="13" fill="#8b0000" opacity="0.18"/>
-              <circle cx="50" cy="41" r="13" fill="#e74c3c"/>
-              <circle cx="46" cy="36" r="3.5" fill="#f88" opacity="0.45"/>
-            </svg>
-          </div>
-          <h2>Drop your Seller Central screenshot</h2>
-          <p>or click to browse files</p>
-          <div class="hint">PNG · JPG · WEBP — Price Discount / Product Performance view</div>
-        </div>
-
-        <div class="preview-box" id="previewBox">
-          <img class="preview-thumb" id="previewThumb" src="" alt="" />
-          <div class="preview-info">
-            <div class="fname" id="previewName"></div>
-            <div class="fsize" id="previewSize"></div>
-          </div>
-          <button class="remove-btn" id="removeBtn">✕</button>
-        </div>
-
-        <button class="run-btn" id="runBtn" disabled>Generate Amazon Price Discount Template</button>
-
-        <div class="status-panel" id="statusPanel">
-          <div class="status-row">
-            <div class="spinner"></div>
-            <span id="statusMsg">Analyzing screenshot with Claude...</span>
-          </div>
-        </div>
-
-        <div class="error-panel" id="errorPanel"></div>
-
-        <div class="results-panel" id="resultsPanel">
-          <div class="results-header">
-            <div class="check">
-              <svg viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2">
-                <path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <span>Template ready</span>
-            <span class="count" id="rowCount"></span>
-          </div>
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead>
-                <tr><th>SKU</th><th>Discounted Price</th><th>Committed Units</th></tr>
-              </thead>
-              <tbody id="tableBody"></tbody>
-            </table>
-          </div>
-          <button class="dl-btn" id="dlBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-              <path d="M12 3v12m0 0l-4-4m4 4l4-4M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Download Price_Discount_Fixed_price.xlsx
-          </button>
-        </div>
+        <div class="twrap"><table class="dtbl"><thead><tr><th>SKU</th><th>Discounted Price</th><th>Committed Units</th></tr></thead><tbody id="tbody"></tbody></table></div>
+        <button class="dlbtn" id="dlBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="16" height="16"><path d="M12 3v12m0 0l-4-4m4 4l4-4M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Download Price_Discount_Fixed_price.xlsx
+        </button>
       </div>
     </div>
-    <div class="footer">Powered by Claude · Northline Brands · CLAUDEYH-01</div>
   </div>
+  <div class="footer">Powered by Claude · Northline Brands · CLAUDEYH-01</div>
+</div>
+<script>
+let imgFile=null, data=[];
+const $=id=>document.getElementById(id);
 
-  <script>
-    let imageFile = null;
-    let extractedData = [];
+// Load saved key
+const saved=localStorage.getItem('ant_key');
+if(saved){$('apiKey').value=saved;$('keyMsg').textContent='✓ Key saved';$('keyMsg').className='apimsg ok';}
 
-    const apiKeyInput = document.getElementById('apiKeyInput');
-    const apiSaveBtn = document.getElementById('apiSaveBtn');
-    const apiStatus = document.getElementById('apiStatus');
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const previewBox = document.getElementById('previewBox');
-    const previewThumb = document.getElementById('previewThumb');
-    const previewName = document.getElementById('previewName');
-    const previewSize = document.getElementById('previewSize');
-    const removeBtn = document.getElementById('removeBtn');
-    const runBtn = document.getElementById('runBtn');
-    const statusPanel = document.getElementById('statusPanel');
-    const statusMsg = document.getElementById('statusMsg');
-    const errorPanel = document.getElementById('errorPanel');
-    const resultsPanel = document.getElementById('resultsPanel');
-    const tableBody = document.getElementById('tableBody');
-    const rowCount = document.getElementById('rowCount');
-    const dlBtn = document.getElementById('dlBtn');
+$('saveKey').onclick=()=>{
+  const k=$('apiKey').value.trim();
+  if(!k.startsWith('sk-ant-')){$('keyMsg').textContent='✗ Must start with sk-ant-';$('keyMsg').style.color='#b91c1c';return;}
+  localStorage.setItem('ant_key',k);
+  $('keyMsg').textContent='✓ Key saved — ready';
+  $('keyMsg').className='apimsg ok';
+};
 
-    // Load saved API key
-    const savedKey = localStorage.getItem('anthropic_api_key');
-    if (savedKey) {
-      apiKeyInput.value = savedKey;
-      apiStatus.textContent = '✓ Key saved — ready to use';
-      apiStatus.className = 'api-status ok';
-    }
+function setFile(f){
+  if(!f||!f.type.startsWith('image/'))return;
+  imgFile=f;
+  $('thumb').src=URL.createObjectURL(f);
+  $('fname').textContent=f.name;
+  $('fsize').textContent=(f.size/1024).toFixed(1)+' KB';
+  $('prev').classList.add('show');
+  $('runBtn').disabled=false;
+  $('res').classList.remove('show');
+  $('err').classList.remove('show');
+  $('stat').classList.remove('show');
+}
 
-    apiSaveBtn.addEventListener('click', () => {
-      const key = apiKeyInput.value.trim();
-      if (!key.startsWith('sk-ant-')) {
-        apiStatus.textContent = '✗ Key should start with sk-ant-...';
-        apiStatus.className = 'api-status';
-        apiStatus.style.color = '#b91c1c';
-        return;
-      }
-      localStorage.setItem('anthropic_api_key', key);
-      apiStatus.textContent = '✓ Key saved — ready to use';
-      apiStatus.className = 'api-status ok';
+$('drop').addEventListener('dragover',e=>{e.preventDefault();$('drop').classList.add('over');});
+$('drop').addEventListener('dragleave',()=>$('drop').classList.remove('over'));
+$('drop').addEventListener('drop',e=>{e.preventDefault();$('drop').classList.remove('over');if(e.dataTransfer.files[0])setFile(e.dataTransfer.files[0]);});
+$('fileIn').addEventListener('change',()=>{if($('fileIn').files[0])setFile($('fileIn').files[0]);});
+$('xbtn').onclick=()=>{imgFile=null;$('prev').classList.remove('show');$('runBtn').disabled=true;$('fileIn').value='';$('res').classList.remove('show');$('err').classList.remove('show');$('stat').classList.remove('show');};
+
+function showErr(m){$('err').textContent=m;$('err').classList.add('show');$('stat').classList.remove('show');$('runBtn').disabled=false;}
+
+$('runBtn').onclick=async()=>{
+  const key=localStorage.getItem('ant_key');
+  if(!key){showErr('Save your Anthropic API key first.');return;}
+  if(!imgFile)return;
+  $('runBtn').disabled=true;
+  $('err').classList.remove('show');
+  $('res').classList.remove('show');
+  $('stat').classList.add('show');
+  $('statMsg').textContent='Analyzing screenshot with Claude...';
+
+  try{
+    const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(imgFile);});
+    const mt=imgFile.type||'image/png';
+
+    const prompt=`Analyze this Amazon Seller Central screenshot. Extract every product row that shows both a SKU and a discounted price. Return ONLY a JSON array like [{"sku":"13014FBA","price":14.99}]. No markdown, no explanation. Skip rows missing either value.`;
+
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mt,data:b64}},{type:'text',text:prompt}]}]})
     });
 
-    function setFile(file) {
-      if (!file || !file.type.startsWith('image/')) return;
-      imageFile = file;
-      previewThumb.src = URL.createObjectURL(file);
-      previewName.textContent = file.name;
-      previewSize.textContent = (file.size / 1024).toFixed(1) + ' KB';
-      previewBox.classList.add('show');
-      runBtn.disabled = false;
-      resultsPanel.classList.remove('show');
-      errorPanel.classList.remove('show');
-      statusPanel.classList.remove('show');
-    }
+    if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e.error?.message||'API error '+resp.status);}
 
-    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-    dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
-    fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
-    removeBtn.addEventListener('click', () => {
-      imageFile = null;
-      previewBox.classList.remove('show');
-      runBtn.disabled = true;
-      fileInput.value = '';
-      resultsPanel.classList.remove('show');
-      errorPanel.classList.remove('show');
-      statusPanel.classList.remove('show');
-    });
+    $('statMsg').textContent='Building Excel...';
+    const json=await resp.json();
+    const raw=json.content.find(b=>b.type==='text')?.text||'[]';
+    data=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    if(!data.length)throw new Error('No products found. Make sure SKUs and prices are visible in the screenshot.');
 
-    function showError(msg) {
-      errorPanel.textContent = msg;
-      errorPanel.classList.add('show');
-      statusPanel.classList.remove('show');
-      runBtn.disabled = false;
-    }
+    $('tbody').innerHTML='';
+    data.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${r.sku}</td><td>$${parseFloat(r.price).toFixed(2)}</td><td>5000</td>`;$('tbody').appendChild(tr);});
+    $('cnt').textContent=data.length+' SKUs';
+    $('stat').classList.remove('show');
+    $('res').classList.add('show');
+    $('runBtn').disabled=false;
+  }catch(e){showErr('Error: '+e.message);}
+};
 
-    function toBase64(file) {
-      return new Promise((res, rej) => {
-        const r = new FileReader();
-        r.onload = () => res(r.result.split(',')[1]);
-        r.onerror = rej;
-        r.readAsDataURL(file);
-      });
-    }
-
-    runBtn.addEventListener('click', async () => {
-      const apiKey = localStorage.getItem('anthropic_api_key');
-      if (!apiKey) { showError('Please enter and save your Anthropic API key first.'); return; }
-      if (!imageFile) return;
-
-      runBtn.disabled = true;
-      errorPanel.classList.remove('show');
-      resultsPanel.classList.remove('show');
-      statusPanel.classList.add('show');
-      statusMsg.textContent = 'Analyzing screenshot with Claude...';
-
-      try {
-        const b64 = await toBase64(imageFile);
-        const mediaType = imageFile.type || 'image/png';
-
-        const prompt = `You are analyzing an Amazon Seller Central screenshot showing a Price Discount or Product Performance page.
-
-Extract ALL visible products that have a SKU and a discounted price shown.
-
-For each product return:
-- sku: the SKU value (e.g. "13014FBA", "18000UPC")
-- price: the numeric discounted price (e.g. 14.99)
-
-IMPORTANT: Only include rows where BOTH sku AND price are clearly visible. Skip parent/group rows with no price. Skip rows where either field is unclear.
-
-Respond ONLY with valid JSON array, no markdown, no explanation:
-[{"sku":"...","price":14.99},...]`;
-
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01'
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 1000,
-            messages: [{ role: 'user', content: [
-              { type: 'image', source: { type: 'base64', media_type: mediaType, data: b64 } },
-              { type: 'text', text: prompt }
-            ]}]
-          })
-        });
-
-        if (!response.ok) {
-          const err = await response.json().catch(() => ({}));
-          throw new Error(err.error?.message || 'API error ' + response.status);
-        }
-
-        statusMsg.textContent = 'Building Excel template...';
-        const data = await response.json();
-        const raw = data.content.find(b => b.type === 'text')?.text || '[]';
-        const clean = raw.replace(/```json|```/g, '').trim();
-        extractedData = JSON.parse(clean);
-
-        if (!Array.isArray(extractedData) || extractedData.length === 0) {
-          throw new Error('No products found. Make sure the image shows SKUs and discounted prices clearly.');
-        }
-
-        tableBody.innerHTML = '';
-        extractedData.forEach(row => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${row.sku}</td><td>$${parseFloat(row.price).toFixed(2)}</td><td>5000</td>`;
-          tableBody.appendChild(tr);
-        });
-
-        rowCount.textContent = extractedData.length + ' SKUs';
-        statusPanel.classList.remove('show');
-        resultsPanel.classList.add('show');
-        runBtn.disabled = false;
-
-      } catch (e) {
-        showError('Error: ' + e.message);
-      }
-    });
-
-    dlBtn.addEventListener('click', () => {
-      const wb = XLSX.utils.book_new();
-      const instructionsData = [
-        ['How to use your Price Discount Template'],
-        ['Do not modify or delete any column headers in the Template sheet.'],
-        ['File must be xlsx format. Upload via the Upload file button on Step 2 Add Products section.'],
-      ];
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(instructionsData), 'Instructions');
-
-      const templateRows = [
-        ['SKU', 'DISCOUNTED PRICE', 'COMMITTED UNITS'],
-        ['SKU', 'Discounted Price', 'Committed Units'],
-        ...extractedData.map(r => [r.sku, parseFloat(r.price), 5000])
-      ];
-      const wsTemplate = XLSX.utils.aoa_to_sheet(templateRows);
-      wsTemplate['!cols'] = [{ wch: 22 }, { wch: 22 }, { wch: 22 }];
-      XLSX.utils.book_append_sheet(wb, wsTemplate, 'Template');
-
-      const defsData = [
-        ['Column name', 'Definition and Use', 'Accepted Values', 'Example', 'Required'],
-        ['SKU', 'Enter the SKU you wish to add to your Price Discount.', 'Alphanumeric, 1-40 characters.', 'SKU123', 'Required'],
-        ['Discounted Price', 'Enter the fixed discounted price for the product', 'Positive Numeric', '20', 'Required'],
-        ['Committed Units', 'The number of units to be sold at the discounted price.', 'Positive Numeric', '50', 'Required'],
-      ];
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(defsData), 'Data Definitions');
-      XLSX.writeFile(wb, 'Price_Discount_Fixed_price.xlsx');
-    });
-  </script>
+$('dlBtn').onclick=()=>{
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['How to use your Price Discount Template'],['Do not modify column headers.'],['Upload xlsx via Add Products on Step 2.']]),'Instructions');
+  const ws=XLSX.utils.aoa_to_sheet([['SKU','DISCOUNTED PRICE','COMMITTED UNITS'],['SKU','Discounted Price','Committed Units'],...data.map(r=>[r.sku,parseFloat(r.price),5000])]);
+  ws['!cols']=[{wch:22},{wch:22},{wch:22}];
+  XLSX.utils.book_append_sheet(wb,ws,'Template');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Column name','Definition','Accepted Values','Example','Required'],['SKU','SKU to add','Alphanumeric 1-40 chars','SKU123','Required'],['Discounted Price','Fixed discounted price','Positive Numeric','20','Required'],['Committed Units','Units at discounted price','Positive Numeric','50','Required']]),'Data Definitions');
+  XLSX.writeFile(wb,'Price_Discount_Fixed_price.xlsx');
+};
+</script>
 </body>
 </html>
