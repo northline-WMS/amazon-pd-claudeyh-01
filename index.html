@@ -450,7 +450,7 @@ IMPORTANT: Only include rows where BOTH sku AND price are clearly visible. Skip 
 Respond ONLY with valid JSON array, no markdown, no explanation:
 [{"sku":"...","price":14.99},...]`;
 
-        const response = await fetch('LAMBDA_FUNCTION_URL_HERE', {
+        const response = await fetch('https://4h62sxh4cnspucusduzrtdknxy0lwagg.lambda-url.us-east-2.on.aws/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
