@@ -10,256 +10,84 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #ffffff;
-      --bg-secondary: #f7f7f5;
-      --text: #1a1a1a;
-      --text-secondary: #6b6b6b;
-      --text-tertiary: #aaaaaa;
-      --border: rgba(0,0,0,0.12);
-      --border-hover: rgba(0,0,0,0.25);
-      --danger-bg: #fff0f0;
-      --danger-border: rgba(220,50,50,0.3);
-      --danger-text: #b91c1c;
+      --bg: #ffffff; --bg-secondary: #f7f7f5; --text: #1a1a1a;
+      --text-secondary: #6b6b6b; --text-tertiary: #aaaaaa;
+      --border: rgba(0,0,0,0.12); --border-hover: rgba(0,0,0,0.25);
+      --danger-bg: #fff0f0; --danger-border: rgba(220,50,50,0.3); --danger-text: #b91c1c;
     }
-
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #1c1c1e;
-        --bg-secondary: #2c2c2e;
-        --text: #f0f0f0;
-        --text-secondary: #a0a0a0;
-        --text-tertiary: #606060;
-        --border: rgba(255,255,255,0.12);
-        --border-hover: rgba(255,255,255,0.28);
-        --danger-bg: #2a1515;
-        --danger-border: rgba(220,80,80,0.35);
-        --danger-text: #f87171;
+        --bg: #1c1c1e; --bg-secondary: #2c2c2e; --text: #f0f0f0;
+        --text-secondary: #a0a0a0; --text-tertiary: #606060;
+        --border: rgba(255,255,255,0.12); --border-hover: rgba(255,255,255,0.28);
+        --danger-bg: #2a1515; --danger-border: rgba(220,80,80,0.35); --danger-text: #f87171;
       }
     }
-
-    html, body {
-      min-height: 100vh;
-      background: var(--bg-secondary);
-      font-family: 'DM Sans', sans-serif;
-      color: var(--text);
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 40px 16px 60px;
-    }
-
-    .card {
-      width: 100%;
-      max-width: 560px;
-      background: var(--bg);
-      border-radius: 16px;
-      border: 0.5px solid var(--border);
-      overflow: hidden;
-      box-shadow: 0 2px 24px rgba(0,0,0,0.07);
-    }
-
-    .header {
-      border-bottom: 0.5px solid var(--border);
-      padding: 20px 24px 18px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .logo {
-      width: 36px; height: 36px;
-      background: #FF9900;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
+    html, body { min-height: 100vh; background: var(--bg-secondary); font-family: 'DM Sans', sans-serif; color: var(--text); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px 60px; }
+    .card { width: 100%; max-width: 560px; background: var(--bg); border-radius: 16px; border: 0.5px solid var(--border); overflow: hidden; box-shadow: 0 2px 24px rgba(0,0,0,0.07); }
+    .header { border-bottom: 0.5px solid var(--border); padding: 20px 24px 18px; display: flex; align-items: center; gap: 14px; }
+    .logo { width: 36px; height: 36px; background: #FF9900; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .logo svg { width: 20px; height: 20px; }
-
-    .header-text h1 {
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      color: var(--text);
-      line-height: 1.2;
-    }
-    .header-text p {
-      font-size: 11px;
-      color: var(--text-secondary);
-      font-family: 'IBM Plex Mono', monospace;
-      margin-top: 3px;
-    }
-    .badge {
-      margin-left: auto;
-      font-size: 10px;
-      font-family: 'IBM Plex Mono', monospace;
-      background: var(--bg-secondary);
-      border: 0.5px solid var(--border);
-      border-radius: 4px;
-      padding: 4px 9px;
-      color: var(--text-secondary);
-      white-space: nowrap;
-    }
-
+    .header-text h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); line-height: 1.2; }
+    .header-text p { font-size: 11px; color: var(--text-secondary); font-family: 'IBM Plex Mono', monospace; margin-top: 3px; }
+    .badge { margin-left: auto; font-size: 10px; font-family: 'IBM Plex Mono', monospace; background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: 4px; padding: 4px 9px; color: var(--text-secondary); white-space: nowrap; }
     .body { padding: 24px; }
 
-    .drop-zone {
-      border: 1.5px dashed var(--border-hover);
-      border-radius: 12px;
-      padding: 44px 24px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
-      position: relative;
-      background: var(--bg-secondary);
-    }
-    .drop-zone:hover, .drop-zone.drag-over {
-      border-color: #FF9900;
-      background: var(--bg);
-    }
-    .drop-zone input[type=file] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-    }
-    .drop-icon {
-      width: 52px; height: 52px;
-      margin: 0 auto 16px;
-      background: var(--bg);
-      border: 0.5px solid var(--border);
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .drop-icon svg { width: 24px; height: 24px; color: #FF9900; }
-    .drop-zone h2 {
-      font-size: 15px; font-weight: 500;
-      color: var(--text); margin-bottom: 6px;
-    }
+    /* API Key section */
+    .api-section { margin-bottom: 20px; padding: 14px 16px; background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: 10px; }
+    .api-section label { font-size: 11px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-family: 'IBM Plex Mono', monospace; display: block; margin-bottom: 8px; }
+    .api-row { display: flex; gap: 8px; align-items: center; }
+    .api-input { flex: 1; padding: 9px 12px; border: 0.5px solid var(--border-hover); border-radius: 8px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; background: var(--bg); color: var(--text); outline: none; }
+    .api-input:focus { border-color: #FF9900; }
+    .api-save { padding: 9px 16px; background: #FF9900; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
+    .api-save:hover { opacity: 0.88; }
+    .api-status { font-size: 11px; margin-top: 6px; font-family: 'IBM Plex Mono', monospace; }
+    .api-status.ok { color: #2e7d32; }
+    .api-status.empty { color: var(--text-tertiary); }
+
+    .drop-zone { border: 1.5px dashed var(--border-hover); border-radius: 12px; padding: 44px 24px; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; position: relative; background: var(--bg-secondary); }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: #FF9900; background: var(--bg); }
+    .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .drop-zone h2 { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 6px; margin-top: 12px; }
     .drop-zone p { font-size: 13px; color: var(--text-secondary); }
-    .drop-zone .hint {
-      margin-top: 10px;
-      font-size: 11px;
-      font-family: 'IBM Plex Mono', monospace;
-      color: var(--text-tertiary);
-    }
-
-    .preview-box {
-      display: none;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      border: 0.5px solid var(--border);
-      border-radius: 10px;
-      margin-top: 14px;
-      background: var(--bg);
-    }
+    .drop-zone .hint { margin-top: 10px; font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--text-tertiary); }
+    .preview-box { display: none; align-items: center; gap: 12px; padding: 12px 16px; border: 0.5px solid var(--border); border-radius: 10px; margin-top: 14px; background: var(--bg); }
     .preview-box.show { display: flex; }
-    .preview-thumb {
-      width: 48px; height: 48px;
-      border-radius: 6px;
-      object-fit: cover;
-      border: 0.5px solid var(--border);
-      flex-shrink: 0;
-    }
+    .preview-thumb { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; border: 0.5px solid var(--border); flex-shrink: 0; }
     .preview-info { flex: 1; min-width: 0; }
-    .preview-info .fname {
-      font-size: 13px; font-weight: 500;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .preview-info .fsize {
-      font-size: 11px; color: var(--text-secondary);
-      font-family: 'IBM Plex Mono', monospace; margin-top: 2px;
-    }
-    .remove-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--text-tertiary); font-size: 18px; line-height: 1; padding: 4px;
-    }
+    .preview-info .fname { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .preview-info .fsize { font-size: 11px; color: var(--text-secondary); font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
+    .remove-btn { background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 18px; line-height: 1; padding: 4px; }
     .remove-btn:hover { color: var(--text); }
-
-    .run-btn {
-      width: 100%; margin-top: 18px; padding: 13px;
-      background: #FF9900; color: #fff; border: none;
-      border-radius: 10px; font-size: 14px; font-weight: 600;
-      font-family: 'DM Sans', sans-serif; cursor: pointer;
-      letter-spacing: -0.01em;
-      transition: opacity 0.15s, transform 0.1s;
-    }
+    .run-btn { width: 100%; margin-top: 18px; padding: 13px; background: #FF9900; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; letter-spacing: -0.01em; transition: opacity 0.15s, transform 0.1s; }
     .run-btn:hover { opacity: 0.88; }
     .run-btn:active { transform: scale(0.99); }
     .run-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
-    .status-panel {
-      display: none; margin-top: 18px; padding: 14px 16px;
-      border: 0.5px solid var(--border); border-radius: 10px;
-      background: var(--bg-secondary);
-    }
+    .status-panel { display: none; margin-top: 18px; padding: 14px 16px; border: 0.5px solid var(--border); border-radius: 10px; background: var(--bg-secondary); }
     .status-panel.show { display: block; }
     .status-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary); }
-    .spinner {
-      width: 16px; height: 16px; flex-shrink: 0;
-      border: 2px solid var(--border-hover);
-      border-top-color: #FF9900;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
+    .spinner { width: 16px; height: 16px; flex-shrink: 0; border: 2px solid var(--border-hover); border-top-color: #FF9900; border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    .error-panel {
-      display: none; margin-top: 14px; padding: 13px 16px;
-      border: 0.5px solid var(--danger-border); border-radius: 10px;
-      background: var(--danger-bg); font-size: 13px; color: var(--danger-text);
-    }
+    .error-panel { display: none; margin-top: 14px; padding: 13px 16px; border: 0.5px solid var(--danger-border); border-radius: 10px; background: var(--danger-bg); font-size: 13px; color: var(--danger-text); }
     .error-panel.show { display: block; }
-
     .results-panel { display: none; margin-top: 20px; }
     .results-panel.show { display: block; }
-
-    .results-header {
-      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
-    }
-    .check {
-      width: 20px; height: 20px; background: #2e7d32;
-      border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
+    .results-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .check { width: 20px; height: 20px; background: #2e7d32; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .check svg { width: 11px; height: 11px; }
     .results-header span { font-size: 13px; font-weight: 500; }
-    .results-header .count {
-      margin-left: auto; font-size: 11px;
-      font-family: 'IBM Plex Mono', monospace; color: var(--text-secondary);
-    }
-
+    .results-header .count { margin-left: auto; font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--text-secondary); }
     .table-wrap { overflow-x: auto; border: 0.5px solid var(--border); border-radius: 10px; }
-    .data-table {
-      width: 100%; border-collapse: collapse;
-      font-size: 12px; font-family: 'IBM Plex Mono', monospace;
-    }
-    .data-table th {
-      background: var(--bg-secondary); padding: 8px 14px; text-align: left;
-      font-weight: 500; font-size: 10px; color: var(--text-secondary);
-      border-bottom: 0.5px solid var(--border);
-      text-transform: uppercase; letter-spacing: 0.05em;
-    }
-    .data-table td {
-      padding: 7px 14px; border-bottom: 0.5px solid var(--border); color: var(--text);
-    }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'IBM Plex Mono', monospace; }
+    .data-table th { background: var(--bg-secondary); padding: 8px 14px; text-align: left; font-weight: 500; font-size: 10px; color: var(--text-secondary); border-bottom: 0.5px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; }
+    .data-table td { padding: 7px 14px; border-bottom: 0.5px solid var(--border); color: var(--text); }
     .data-table tr:last-child td { border-bottom: none; }
     .data-table tr:hover td { background: var(--bg-secondary); }
-
-    .dl-btn {
-      width: 100%; margin-top: 14px; padding: 13px;
-      background: #2e7d32; color: #fff; border: none;
-      border-radius: 10px; font-size: 14px; font-weight: 600;
-      font-family: 'DM Sans', sans-serif; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      transition: opacity 0.15s;
-    }
+    .dl-btn { width: 100%; margin-top: 14px; padding: 13px; background: #2e7d32; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.15s; }
     .dl-btn:hover { opacity: 0.88; }
     .dl-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
-
-    .footer {
-      margin-top: 32px; text-align: center;
-      font-size: 11px; font-family: 'IBM Plex Mono', monospace;
-      color: var(--text-tertiary);
-    }
+    .footer { margin-top: 32px; text-align: center; font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--text-tertiary); }
   </style>
 </head>
 <body>
@@ -277,23 +105,28 @@
       </div>
 
       <div class="body">
+
+        <!-- API Key Section -->
+        <div class="api-section">
+          <label>Anthropic API Key</label>
+          <div class="api-row">
+            <input class="api-input" type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." />
+            <button class="api-save" id="apiSaveBtn">Save</button>
+          </div>
+          <div class="api-status empty" id="apiStatus">No key saved — enter your key above</div>
+        </div>
+
         <div class="drop-zone" id="dropZone">
           <input type="file" id="fileInput" accept="image/*" />
-          <div class="drop-icon" style="background:none;border:none;width:72px;height:72px;">
+          <div style="width:72px;height:72px;margin:0 auto;">
             <svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" width="72" height="72">
-              <!-- stems -->
               <path d="M24 30 Q22 16 36 12 Q50 16 48 30" stroke="#2d5a1b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
               <path d="M36 12 Q40 6 46 8" stroke="#2d5a1b" stroke-width="2" fill="none" stroke-linecap="round"/>
-              <!-- leaf -->
               <ellipse cx="41" cy="10" rx="5" ry="2.5" fill="#3a7d1e" transform="rotate(-30 41 10)"/>
-              <!-- left cherry shadow -->
               <circle cx="22" cy="42" r="13" fill="#8b0000" opacity="0.18"/>
-              <!-- left cherry -->
               <circle cx="22" cy="41" r="13" fill="#c0392b"/>
               <circle cx="18" cy="36" r="3.5" fill="#e55" opacity="0.45"/>
-              <!-- right cherry shadow -->
               <circle cx="50" cy="42" r="13" fill="#8b0000" opacity="0.18"/>
-              <!-- right cherry -->
               <circle cx="50" cy="41" r="13" fill="#e74c3c"/>
               <circle cx="46" cy="36" r="3.5" fill="#f88" opacity="0.45"/>
             </svg>
@@ -336,11 +169,7 @@
           <div class="table-wrap">
             <table class="data-table">
               <thead>
-                <tr>
-                  <th>SKU</th>
-                  <th>Discounted Price</th>
-                  <th>Committed Units</th>
-                </tr>
+                <tr><th>SKU</th><th>Discounted Price</th><th>Committed Units</th></tr>
               </thead>
               <tbody id="tableBody"></tbody>
             </table>
@@ -354,7 +183,6 @@
         </div>
       </div>
     </div>
-
     <div class="footer">Powered by Claude · Northline Brands · CLAUDEYH-01</div>
   </div>
 
@@ -362,6 +190,9 @@
     let imageFile = null;
     let extractedData = [];
 
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const apiSaveBtn = document.getElementById('apiSaveBtn');
+    const apiStatus = document.getElementById('apiStatus');
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
     const previewBox = document.getElementById('previewBox');
@@ -378,6 +209,27 @@
     const rowCount = document.getElementById('rowCount');
     const dlBtn = document.getElementById('dlBtn');
 
+    // Load saved API key
+    const savedKey = localStorage.getItem('anthropic_api_key');
+    if (savedKey) {
+      apiKeyInput.value = savedKey;
+      apiStatus.textContent = '✓ Key saved — ready to use';
+      apiStatus.className = 'api-status ok';
+    }
+
+    apiSaveBtn.addEventListener('click', () => {
+      const key = apiKeyInput.value.trim();
+      if (!key.startsWith('sk-ant-')) {
+        apiStatus.textContent = '✗ Key should start with sk-ant-...';
+        apiStatus.className = 'api-status';
+        apiStatus.style.color = '#b91c1c';
+        return;
+      }
+      localStorage.setItem('anthropic_api_key', key);
+      apiStatus.textContent = '✓ Key saved — ready to use';
+      apiStatus.className = 'api-status ok';
+    });
+
     function setFile(file) {
       if (!file || !file.type.startsWith('image/')) return;
       imageFile = file;
@@ -393,11 +245,7 @@
 
     dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-    dropZone.addEventListener('drop', e => {
-      e.preventDefault();
-      dropZone.classList.remove('drag-over');
-      if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
-    });
+    dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
     fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
     removeBtn.addEventListener('click', () => {
       imageFile = null;
@@ -426,7 +274,10 @@
     }
 
     runBtn.addEventListener('click', async () => {
+      const apiKey = localStorage.getItem('anthropic_api_key');
+      if (!apiKey) { showError('Please enter and save your Anthropic API key first.'); return; }
       if (!imageFile) return;
+
       runBtn.disabled = true;
       errorPanel.classList.remove('show');
       resultsPanel.classList.remove('show');
@@ -450,19 +301,20 @@ IMPORTANT: Only include rows where BOTH sku AND price are clearly visible. Skip 
 Respond ONLY with valid JSON array, no markdown, no explanation:
 [{"sku":"...","price":14.99},...]`;
 
-        const response = await fetch('https://4h62sxh4cnspucusduzrtdknxy0lwagg.lambda-url.us-east-2.on.aws/', {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
+          },
           body: JSON.stringify({
             model: 'claude-sonnet-4-20250514',
             max_tokens: 1000,
-            messages: [{
-              role: 'user',
-              content: [
-                { type: 'image', source: { type: 'base64', media_type: mediaType, data: b64 } },
-                { type: 'text', text: prompt }
-              ]
-            }]
+            messages: [{ role: 'user', content: [
+              { type: 'image', source: { type: 'base64', media_type: mediaType, data: b64 } },
+              { type: 'text', text: prompt }
+            ]}]
           })
         });
 
@@ -472,14 +324,13 @@ Respond ONLY with valid JSON array, no markdown, no explanation:
         }
 
         statusMsg.textContent = 'Building Excel template...';
-
         const data = await response.json();
         const raw = data.content.find(b => b.type === 'text')?.text || '[]';
         const clean = raw.replace(/```json|```/g, '').trim();
         extractedData = JSON.parse(clean);
 
         if (!Array.isArray(extractedData) || extractedData.length === 0) {
-          throw new Error('No products found in screenshot. Make sure the image shows SKUs and discounted prices clearly.');
+          throw new Error('No products found. Make sure the image shows SKUs and discounted prices clearly.');
         }
 
         tableBody.innerHTML = '';
@@ -501,21 +352,12 @@ Respond ONLY with valid JSON array, no markdown, no explanation:
 
     dlBtn.addEventListener('click', () => {
       const wb = XLSX.utils.book_new();
-
       const instructionsData = [
         ['How to use your Price Discount Template'],
-        ['Step 1: Getting started'],
-        ['Refer to the Data Definitions sheet to familiarise yourself with acceptable values.'],
         ['Do not modify or delete any column headers in the Template sheet.'],
-        [''],
-        ['Step 2: Filling out the template'],
-        ['Enter the SKUs, discount amounts, and committed units to upload to your Price Discount.'],
-        [''],
-        ['Step 3: Save and upload'],
         ['File must be xlsx format. Upload via the Upload file button on Step 2 Add Products section.'],
       ];
-      const wsInstructions = XLSX.utils.aoa_to_sheet(instructionsData);
-      XLSX.utils.book_append_sheet(wb, wsInstructions, 'Instructions');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(instructionsData), 'Instructions');
 
       const templateRows = [
         ['SKU', 'DISCOUNTED PRICE', 'COMMITTED UNITS'],
@@ -532,9 +374,7 @@ Respond ONLY with valid JSON array, no markdown, no explanation:
         ['Discounted Price', 'Enter the fixed discounted price for the product', 'Positive Numeric', '20', 'Required'],
         ['Committed Units', 'The number of units to be sold at the discounted price.', 'Positive Numeric', '50', 'Required'],
       ];
-      const wsDefs = XLSX.utils.aoa_to_sheet(defsData);
-      XLSX.utils.book_append_sheet(wb, wsDefs, 'Data Definitions');
-
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(defsData), 'Data Definitions');
       XLSX.writeFile(wb, 'Price_Discount_Fixed_price.xlsx');
     });
   </script>
